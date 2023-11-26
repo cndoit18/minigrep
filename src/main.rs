@@ -1,19 +1,14 @@
-use std::env;
-use std::fs;
+use minigrep::{run, Config};
+use std::{env, process};
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
-    if args.len() != 3 {
-        panic!("not enough arguments")
-    }
+    let config = Config::build(env::args()).unwrap_or_else(|err| {
+        eprintln!("Problem parsing arguments: {err}");
+        process::exit(1);
+    });
 
-    let query = args.get(1).unwrap();
-    let file_path = args.get(2).unwrap();
-
-    let contexts = fs::read_to_string(file_path).expect("should have been able to read the file");
-    for (line, context) in contexts.lines().enumerate() {
-        if context.contains(query) {
-            println!("{}:{}", line + 1, context);
-        }
-    }
+    run(&config).unwrap_or_else(|err| {
+        eprintln!("Application error: {err}");
+        process::exit(1);
+    })
 }
